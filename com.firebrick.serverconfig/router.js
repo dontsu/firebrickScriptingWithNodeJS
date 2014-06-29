@@ -1,6 +1,9 @@
 /**
- * This is a router that either handles the requested path, or in case of resource files (ex. js, css)
+ * This is a router that either handles the requested path, 
+ * or in case of resource files (ex. js, css)
  * it will read those files and return back their content in case they exist
+ * 
+ * @author Diana Raileanu
  */
 
 var path = require('path');

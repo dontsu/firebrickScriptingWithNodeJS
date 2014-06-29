@@ -1,10 +1,12 @@
 /**
- * New node file
+ * This file contains the proper request handling logic
+ * 
+ * @author Diana Raileanu
  */
 var fs = require('fs');
 var exec = require("child_process").exec;
 
-function start(response) {
+function start(response, postData, urlParams) {
 	console.log("Request handler 'start' was called.");
 	fs.readFile('./html/start.html', function(err, html) {
 		if (err) {
@@ -18,6 +20,19 @@ function start(response) {
 	});
 }
 
+function index(response) {
+	console.log("Request handler 'index' was called.");
+	fs.readFile('./html/index.html', function(err, html) {
+		if (err) {
+			throw err;
+		}
+		response.writeHeader(200, {
+			"Content-Type" : "text/html"
+		});
+		response.write(html);
+		response.end();
+	});
+}
 function upload(response, postData, urlParams) {
 	console.log("Request handler 'upload' was called.");
 	response.writeHead(200, {
@@ -63,3 +78,4 @@ function executeScript(response, postData, urlParams) {
 exports.start = start;
 exports.upload = upload;
 exports.executeScript = executeScript;
+exports.index = index;
