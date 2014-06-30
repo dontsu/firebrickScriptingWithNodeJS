@@ -7,7 +7,6 @@
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
-
 function dirTree(filename) {
     var stats = fs.lstatSync(filename),
         info = {
@@ -32,12 +31,14 @@ function dirTree(filename) {
 }
 /*
  * this is used for testing purposes
- * 
+ */
+
 var start = new Date();
+console.log("test started -------");
 console.log(dirTree("C:/Users/drailean/Downloads"));
 console.log("Start:" + start);
 var stop = new Date();
 console.log("Stop: " + stop + " Difference: " + ( stop- start));
-*/
 
-exports.dirTree = dirTree;
+
+//exports.dirTree = dirTree;

@@ -1,14 +1,28 @@
 <!DOCTYPE html>
 <html>
-<head>    
+<head>   
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script> 
     <title>Select image file</title>
 </head>
 <body>
-<form action="/start" method="post">
+<script type="text/javascript">
+
+    $(function()
+    {
+        $('#imagefile').on('change',function ()
+        {
+            var filePath = $(this).val();
+            $('#imagefilePath').val(filePath);
+        });
+    });
+
+</script>
+<form action="/start" method="post" enctype="multipart/form-data">
 	<div>
+		<input id="imagefilePath" name="imagefilePath" style="width:450px">
 		<input id="imagefile" name="imagefile" type="file">
 		<br>
-		<input value="Upload" type="submit">
+		<input value="Mount" type="submit">
 	</div>
 </form>
 </body>
