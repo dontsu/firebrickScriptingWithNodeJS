@@ -6,7 +6,7 @@ This scripting engine is designed to be integrated with Firebrick
 https://github.com/leetobin )
 
 Nevertheless, it can also run as a stand alone application, 
-the starting page is index.js and in order to start the server, just type in node console
+the starting page is index.js and in order to start the server, just type in node console:
 node index.js
 
 ## Usage
@@ -16,6 +16,7 @@ In order to be able to use it, there are several required tools to be installed:
 3) mongodb driver for node - in order to install this, open console in the folder where scripting engine is located and run:
 npm install mongodb
 
+Note: Make sure the mongodb server is running when you attempt to use this module
 
 ## Developing
 In order to start developing, you additionally will need a development integration environment (IDE).
