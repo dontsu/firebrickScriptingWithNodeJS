@@ -10,7 +10,6 @@ var path = require('path');
 var fs = require('fs');
 
 function route(handle, pathname, response, postData, urlParams) {
-	console.log("About to route a request for " + pathname);
 	if (typeof handle[pathname] === 'function') {
 		return handle[pathname](response, postData, urlParams);
 	} else {
@@ -25,10 +24,10 @@ function route(handle, pathname, response, postData, urlParams) {
 			break;
 		}
 
-		path.exists('.' + pathname, function(exists) {
+		path.exists('./../client/' + pathname, function(exists) {
 
 			if (exists) {
-				fs.readFile('.' + pathname, function(error, content) {
+				fs.readFile('./../client/' + pathname, function(error, content) {
 					if (error) {
 						response.writeHead(500);
 						response.end();

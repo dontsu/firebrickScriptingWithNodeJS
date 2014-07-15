@@ -5,46 +5,80 @@
  */
 var fs = require('fs');
 var exec = require("child_process").exec;
-
-function start(response, postData, urlParams) {
-	console.log("Request handler 'start' was called.");
-	fs.readFile('./html/start.html', function(err, html) {
-		if (err) {
-			throw err;
-		}
-		response.writeHeader(200, {
-			"Content-Type" : "text/html"
-		});
-		response.write(html);
-		response.end();
-	});
-}
+var directoryToJson = require("./directoryToJson");
+var crudActions = require("./dao/crudActions");
 
 function index(response) {
-	console.log("Request handler 'index' was called.");
-	fs.readFile('./html/index.html', function(err, html) {
+	fs.readFile('./../client/html/index.html', function(err, html) {
 		if (err) {
-			throw err;
+			response.writeHeader(404, {
+				"Content-Type" : "text/html"
+			});
+			response.write(err);
+		} else {
+			response.writeHeader(200, {
+				"Content-Type" : "text/html"
+			});
+			response.write(html);
 		}
-		response.writeHeader(200, {
-			"Content-Type" : "text/html"
-		});
-		response.write(html);
 		response.end();
 	});
 }
-function upload(response, postData, urlParams) {
-	console.log("Request handler 'upload' was called.");
-	response.writeHead(200, {
-		"Content-Type" : "text/plain"
+
+function shortcuts(response) {
+	fs.readFile('./../client/html/shortcuts.html', function(err, html) {
+		if (err) {
+			response.writeHeader(404, {
+				"Content-Type" : "text/html"
+			});
+			response.write(err);
+		} else {
+			response.writeHeader(200, {
+				"Content-Type" : "text/html"
+			});
+			response.write(html);
+		}
+		response.end();
 	});
-	response.write("Hello Upload");
-	response.end();
+}
+
+function loadFolder(response, postData, urlParams) {
+	// hard-code at the moment until I find a way to ge if from the user
+	var path = urlParams.location_path;
+	if (path !== null && path.trim() !== '') {
+		var jsonResult = directoryToJson.dirTree(path);
+
+		crudActions.saveNode(jsonResult, function(err, result) {
+			if (err !== null) {
+				response.writeHead(500, {
+					"Content-Type" : "application/text"
+				});
+
+				response.end();
+			} else {
+				crudActions.getNodeById(path, function(err, result) {
+					if (err !== null) {
+						response.writeHead(500, {
+							"Content-Type" : "application/text"
+						});
+
+						response.end();
+					} else {
+						response.writeHead(200, {
+							"Content-Type" : "application/json"
+						});
+						response.write(JSON.stringify(result));
+						response.end();
+					}
+				});
+			}
+
+		});
+	}
 }
 
 function executeScript(response, postData, urlParams) {
-	console.log("Request handler 'executeScript' was called.");
-	var scriptName = "userScript.js";
+	var scriptName = "userscripts/default.js";
 
 	fs.writeFile('./' + scriptName, urlParams.scriptBody, function(err) {
 		if (err) {
@@ -67,7 +101,8 @@ function executeScript(response, postData, urlParams) {
 					});
 					response.write(error + stderr);
 					response.end();
-					console.log("Request handler 'executeScript' failed:" + stderr);
+					console.log("Request handler 'executeScript' failed:"
+							+ stderr);
 				}
 			});
 		}
@@ -75,7 +110,44 @@ function executeScript(response, postData, urlParams) {
 
 }
 
-exports.start = start;
-exports.upload = upload;
+function clearDb(response) {
+	var result = crudActions.clearDb();
+	if (result instanceof Error) {
+		response.writeHead(500, {
+			"Content-Type" : "application/text"
+		});
+		response.write(result);
+	} else {
+		response.writeHead(200, {
+			"Content-Type" : "application/text"
+		});
+		response.write("Ok");
+	}
+	response.end();
+}
+
+function loadMenuData(response) {
+	crudActions.getNodes(function(err, result) {
+		if (err !== null) {
+			response.writeHead(500, {
+				"Content-Type" : "application/text"
+			});
+		} else {
+			response.writeHead(200, {
+				"Content-Type" : "application/text"
+			});
+			response.write(JSON.stringify({
+				'nodes' : result
+			}));
+		}
+		response.end();
+	});
+
+}
+
+exports.clearDb = clearDb;
+exports.loadFolder = loadFolder;
 exports.executeScript = executeScript;
 exports.index = index;
+exports.loadMenuData = loadMenuData;
+exports.shortcuts = shortcuts;

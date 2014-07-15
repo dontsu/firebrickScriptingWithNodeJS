@@ -1,0 +1,5 @@
+{
+    "host" : "localhost",
+    "db_port" : "27017" ,
+    "mongodb_bin" : "C://Diana stuff/mongodb-win32-i386-2.4.9/bin"
+}

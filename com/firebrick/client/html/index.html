@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="libraries/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="libraries/jquery.blockUI.js" type="text/javascript" charset="utf-8"></script>
+<script src="header.js" type="text/javascript" charset="utf-8"></script>
+<script src="index_client.js" type="text/javascript" charset="utf-8"></script>
+<script src="libraries/jstree.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel="stylesheet" type="text/css" href="css/start.css">
+<link rel="stylesheet" type="text/css" href="css/jstree.min.css">
+<link rel="icon" href="css/images/favicon.ico" type="image/x-icon">
+<title>Scripting page</title>
+
+</head>
+<body>
+	<div class="menu">
+		<ul id="jsddm">
+			<li><a href="#">Db actions</a>
+				<ul>
+					<li><a id="clearDb" href="#">Clear db</a></li>
+				</ul>
+			</li>
+			<li><a href="#">Mounted devices</a>
+				<ul id="mountedDevices">
+					<li><a href="#">Slide Effect</a></li>
+				</ul></li>
+			<li><a href="#">Existing nodes</a>
+				<ul id="existingNodes">
+					
+				</ul>
+			</li>
+			<li><a href="#">User scripts</a></li>
+			<li><a href="#">Help</a>
+				<ul>
+					<li><a target="_blank" href="shortcuts">Code editor shortcuts</a></li>
+					<li><a target="_blank" href="http://digitalfire.ucd.ie/?page_id=1011">About Firebrick</a></li>
+					<li><a target="_blank" href="#">About this scripting module</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+	<div class="location">
+		Please select the folder of mounted image: 
+		<input id="location_path" style="width: 450px;" value=""> 
+		<input id="location_submit" type="submit" value="Ok">
+	</div>
+	<div class="content">
+		<div id="editor"
+			style="width: 45%; height: auto; height: 850px; min-width: 500px; float: left;">console.log("Hellow	World");</div>
+		<div id="result" class="right">
+			<div id="tree_folder"></div>
+		</div>
+		<input id="search_btn" type="submit" value="Submit">
+	</div>
+</body>
+</html>
+

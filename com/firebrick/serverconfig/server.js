@@ -1,18 +1,18 @@
 var http = require("http");
 var url = require("url");
+var children  = [];
 
 function start(route, handle) {
 
+	
 	function onRequest(request, response) {
 		var pathname = url.parse(request.url).pathname;
 		var urlParams = url.parse(request.url, true).query;
 		var postData = "";
-		console.log("Request for " + pathname + " received.");
 		request.setEncoding("utf8");
 
 		request.addListener("data", function(postDataChunk) {
 			postData += postDataChunk;
-			console.log("Received POST data chunk '" + postDataChunk + "'.");
 		});
 
 		request.addListener("end", function() {
@@ -20,8 +20,15 @@ function start(route, handle) {
 		});
 	}
 	
-	http.createServer(onRequest).listen(8888);
+	http.createServer(onRequest).listen(8082);
 	console.log("Server has started.");
+
+	process.on('exit', function() {
+	  console.log('killing', children.length, 'child processes');
+	  children.forEach(function(child) {
+	    child.kill();
+	  });
+	});
 }
 
 exports.start = start;
