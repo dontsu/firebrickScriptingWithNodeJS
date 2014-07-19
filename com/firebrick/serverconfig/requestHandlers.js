@@ -44,7 +44,7 @@ function shortcuts(response) {
 
 function loadFolder(response, postData, urlParams) {
 	// hard-code at the moment until I find a way to ge if from the user
-	var path = urlParams.location_path;
+	var path = urlParams.locationPath;
 	if (path !== null && path.trim() !== '') {
 		var jsonResult = directoryToJson.dirTree(path);
 
@@ -56,7 +56,7 @@ function loadFolder(response, postData, urlParams) {
 
 				response.end();
 			} else {
-				crudActions.getNodeById(path, function(err, result) {
+				crudActions.getNodeById(path, 0, function(err, result) {
 					if (err !== null) {
 						response.writeHead(500, {
 							"Content-Type" : "application/text"
@@ -145,9 +145,30 @@ function loadMenuData(response) {
 
 }
 
+function getNode(response, postData, urlParams) {
+	if (urlParams !== null && urlParams.nodeId !== null) {
+		crudActions.getNodeById(urlParams.nodeId, urlParams.level,  function(err, result) {
+			if (err !== null) {
+				response.writeHead(500, {
+					"Content-Type" : "application/text"
+				});
+			} else {
+				response.writeHead(200, {
+					"Content-Type" : "application/text"
+				});
+				response.write(JSON.stringify({
+					'nodes' : result
+				}));
+			}
+			response.end();
+		});
+	}
+	;
+}
 exports.clearDb = clearDb;
 exports.loadFolder = loadFolder;
 exports.executeScript = executeScript;
 exports.index = index;
 exports.loadMenuData = loadMenuData;
 exports.shortcuts = shortcuts;
+exports.getNode = getNode;

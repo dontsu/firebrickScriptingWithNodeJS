@@ -15,6 +15,7 @@ handle["/index"] = requestHandlers.index;
 handle["/clearDb"] = requestHandlers.clearDb;
 handle["/loadMenuData"] = requestHandlers.loadMenuData;
 handle["/shortcuts"] = requestHandlers.shortcuts;
+handle["/getNode"] = requestHandlers.getNode;
 
 server.start(router.route, handle);
 mongoserver.connect();

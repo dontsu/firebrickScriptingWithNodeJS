@@ -12,7 +12,7 @@ function saveNode(json, callback) {
 	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
 			+ "/investigationDb", function(err, db) {
 		if (!err && db !== null) {
-			getNodeById(json._id, function(err, result) {
+			getNodeById(json._id, 0, function(err, result) {
 				if (typeof result[0] == 'undefined') {
 					var collection = db.collection('folderNodes');
 					collection.insert(json, function(err, docs) {
@@ -52,29 +52,47 @@ function clearDb() {
 	});
 }
 
-function getNodeById(nodeId, callback) {
-	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
-			+ "/investigationDb", function(err, db) {
-		if (err !== null || db === null) {
-			callback(err);
-		} else {
-			var collection = db.collection('folderNodes');
-			collection.find({
-				'_id' : nodeId
-			}, {
-				"state" : true,
-				"text" : true,
-				"extention" : true,
-				"children" : true,
-				"children._id" : true,
-				"children.text" : true,
-				"children.extention" : true,
-			}).toArray(function(err, documents) {
-				callback(null, documents);
-			});
-		}
-	});
+function getNodeById(nodeId, level, callback) {
+	MongoClient
+			.connect(
+					"mongodb://" + config.host + ":" + config.db_port
+							+ "/investigationDb",
+					function(err, db) {
+						if (err !== null || db === null) {
+							callback(err);
+						} else {
+							var searchLevel = "children.";
+							var conditionLevel = "";
+							var columns = '"state" : true, "text" : true, "extention" : true, "children" : true, "children._id" : true, "children.state" : true, "children.text" : true, "children.extention" : true, ';
+							while (level - 1 > 0) {
+								conditionLevel += "children.";
+								searchLevel += "children.";
+								var columnResult = " : true, ";
+								var searchLevelInclude = '"' + searchLevel.substring(0, searchLevel.lastIndexOf(".")) + '"';
+								columns += searchLevelInclude + columnResult;
+								columns += '"' + searchLevel + '_id" '+ columnResult;
+								columns += '"' + searchLevel + 'state" '
+										+ columnResult + '"' + searchLevel
+										+ 'text"' + columnResult;
+								columns += '"' + searchLevel + 'extention"'
+										+ columnResult;
+								level--;
+							}
+							var condition = '{ "' + conditionLevel + '_id" : "'
+									+ nodeId + '" }';
+							columns = '{' + columns.substring(0, columns.lastIndexOf(",")) + '}';
+							console.log("columns:"	+ columns);
+							var jsonCondition = JSON.parse(condition);
+							var jsonColumns = JSON.parse(columns);
+							var collection = db.collection('folderNodes');
+							collection.find(jsonCondition, jsonColumns)
+									.toArray(function(err, documents) {
+										callback(null, documents);
+									});
+						}
+					});
 }
+
 function getNodes(callback) {
 	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
 			+ "/investigationDb", function(err, db) {
