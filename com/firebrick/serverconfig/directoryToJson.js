@@ -8,7 +8,7 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 
-function dirTree(filename) {
+function dirTree(filename, parent, array) {
 	var stats = fs.lstatSync(filename), info = {
 		_id : filename,
 		name : path.basename(filename),
@@ -18,20 +18,16 @@ function dirTree(filename) {
 		extention : path.extname(filename).replace(".", "").toLowerCase(),
 		// these attributes are used for JStree to display this json
 		text : path.basename(filename),
-		'state' : {
+		state : {
 			'opened' : true
-		}
+		},
+		parent : parent
 	};
 
 	if (stats.isDirectory()) {
-		info.type = "folder";
-		info.children = fs.readdirSync(filename).map(function(child) {
-			return dirTree(filename + '/' + child);
+		fs.readdirSync(filename).map(function(child) {
+			array.push(dirTree(filename + '/' + child, filename, array));
 		});
-	} else {
-		// Assuming it's a file. In real life it could be a symlink or
-		// something else!
-		info.type = "file";
 	}
 	return info;
 }

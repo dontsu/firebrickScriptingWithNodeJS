@@ -7,6 +7,7 @@ var fs = require('fs');
 var exec = require("child_process").exec;
 var directoryToJson = require("./directoryToJson");
 var crudActions = require("./dao/crudActions");
+var path = require('path');
 
 function index(response) {
 	fs.readFile('./../client/html/index.html', function(err, html) {
@@ -44,11 +45,20 @@ function shortcuts(response) {
 
 function loadFolder(response, postData, urlParams) {
 	// hard-code at the moment until I find a way to ge if from the user
-	var path = urlParams.locationPath;
-	if (path !== null && path.trim() !== '') {
-		var jsonResult = directoryToJson.dirTree(path);
+	var nodePath = urlParams.locationPath;
+	if (nodePath !== null && nodePath.trim() !== '') {
+		var arrayResult = [];
+		arrayResult.push({
+			_id : nodePath,
+			parent : "",
+			name : path.basename(nodePath),
+			text : path.basename(nodePath),
+			state : {
+				'opened' : true
+			}
+		});		directoryToJson.dirTree(nodePath, "", arrayResult);
 
-		crudActions.saveNode(jsonResult, function(err, result) {
+		crudActions.save(arrayResult, function(err) {
 			if (err !== null) {
 				response.writeHead(500, {
 					"Content-Type" : "application/text"
@@ -56,7 +66,7 @@ function loadFolder(response, postData, urlParams) {
 
 				response.end();
 			} else {
-				crudActions.getNodeById(path, 0, function(err, result) {
+				crudActions.getNodeById(nodePath, true, function(err, result) {
 					if (err !== null) {
 						response.writeHead(500, {
 							"Content-Type" : "application/text"
@@ -147,7 +157,7 @@ function loadMenuData(response) {
 
 function getNode(response, postData, urlParams) {
 	if (urlParams !== null && urlParams.nodeId !== null) {
-		crudActions.getNodeById(urlParams.nodeId, urlParams.level,  function(err, result) {
+		crudActions.getNodeById(urlParams.nodeId, true, function(err, result) {
 			if (err !== null) {
 				response.writeHead(500, {
 					"Content-Type" : "application/text"

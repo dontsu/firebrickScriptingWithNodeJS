@@ -8,28 +8,28 @@ var config = require("./config.json");
 /*
  * Save the json to the db
  */
-function saveNode(json, callback) {
+function save(array, callback) {
 	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
 			+ "/investigationDb", function(err, db) {
 		if (!err && db !== null) {
-			getNodeById(json._id, 0, function(err, result) {
-				if (typeof result[0] == 'undefined') {
-					var collection = db.collection('folderNodes');
-					collection.insert(json, function(err, docs) {
-						if (err !== null) {
-							callback(err);
-						} else {
-							callback(null);
-						}
-					});
-
+			var collection = db.collection('folderNodes');
+			var bulk = collection.initializeUnorderedBulkOp();
+			for ( var i = 0; i < array.length; i++) {
+				bulk.find({
+					_id : array[i]._id
+				}).upsert().updateOne(array[i]);
+			}
+			bulk.execute(function(err, result) {
+				db.close();
+				if (err !== null) {
+					callback(err);
 				} else {
+					// Finish up test
 					callback(null);
 				}
 			});
-
 		} else {
-			callback(err, null);
+			callback(err);
 		}
 	});
 }
@@ -52,63 +52,103 @@ function clearDb() {
 	});
 }
 
-function getNodeById(nodeId, level, callback) {
-	MongoClient
-			.connect(
-					"mongodb://" + config.host + ":" + config.db_port
-							+ "/investigationDb",
-					function(err, db) {
-						if (err !== null || db === null) {
-							callback(err);
-						} else {
-							var searchLevel = "children.";
-							var conditionLevel = "";
-							var columns = '"state" : true, "text" : true, "extention" : true, "children" : true, "children._id" : true, "children.state" : true, "children.text" : true, "children.extention" : true, ';
-							while (level - 1 > 0) {
-								conditionLevel += "children.";
-								searchLevel += "children.";
-								var columnResult = " : true, ";
-								var searchLevelInclude = '"' + searchLevel.substring(0, searchLevel.lastIndexOf(".")) + '"';
-								columns += searchLevelInclude + columnResult;
-								columns += '"' + searchLevel + '_id" '+ columnResult;
-								columns += '"' + searchLevel + 'state" '
-										+ columnResult + '"' + searchLevel
-										+ 'text"' + columnResult;
-								columns += '"' + searchLevel + 'extention"'
-										+ columnResult;
-								level--;
+function getNodeById(nodeId, includeChildren, callback) {
+	search({
+		'_id' : nodeId
+	}, {
+		"state" : true,
+		"text" : true,
+		"_id" : true,
+		"extention" : true,
+		"parent" : true
+	}, function(err, documents) {
+		if (includeChildren && documents !== null && documents.length == 1) {
+			getNodeChildren(documents[0]._id, function(err, children) {
+				if (err != null) {
+					callback(err, null);
+				} else {
+					documents[0].children = children;
+					if (documents[0].parent !== null
+							&& documents[0].parent.trim() !== "") {
+						getNodeById(documents[0].parent, false, function(err,
+								parent) {
+							if (err != null) {
+								callback(err, null);
+							} else {
+								if (parent !== null && parent.length == 1) {
+									parent[0].children = documents;
+									callback(null, parent);
+								} else {
+									callback(null, documents);
+								}
 							}
-							var condition = '{ "' + conditionLevel + '_id" : "'
-									+ nodeId + '" }';
-							columns = '{' + columns.substring(0, columns.lastIndexOf(",")) + '}';
-							console.log("columns:"	+ columns);
-							var jsonCondition = JSON.parse(condition);
-							var jsonColumns = JSON.parse(columns);
-							var collection = db.collection('folderNodes');
-							collection.find(jsonCondition, jsonColumns)
-									.toArray(function(err, documents) {
-										callback(null, documents);
-									});
-						}
-					});
+						});
+					} else {
+						callback(null, documents);
+					}
+				}
+			});
+		} else {
+			callback(null, documents);
+		}
+		if (err != null) {
+			callback(err, null);
+		}
+	});
 }
 
-function getNodes(callback) {
+function getNodeChildren(parent, callback) {
+	search({
+		'parent' : parent
+	}, {
+		"state" : true,
+		"text" : true,
+		"_id" : true,
+		"extention" : true
+	}, function(err, documents) {
+		if (err != null) {
+			callback(err, null);
+		} else {
+			callback(null, documents);
+		}
+	});
+}
+
+function search(condition, columns, callback) {
 	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
 			+ "/investigationDb", function(err, db) {
 		if (err !== null || db === null) {
 			callback(err);
 		} else {
 			var collection = db.collection('folderNodes');
-			collection.find({}, {
-				"_id" : true
-			}).toArray(function(err, documents) {
-				callback(null, documents);
-			});
+			collection.find(condition, columns).toArray(
+					function(err, documents) {
+						if (err != null) {
+							callback(err, null);
+						} else {
+							callback(null, documents);
+						}
+					});
+		}
+	});
+}
+
+function getNodes(callback) {
+	search({
+		parent : ""
+	}, {
+		"_id" : true
+	}, function(err, documents) {
+		if (err != null) {
+			callback(err, null);
+		} else {
+			callback(null, documents);
 		}
 	});
 }
 exports.getNodes = getNodes;
 exports.getNodeById = getNodeById;
-exports.saveNode = saveNode;
+exports.save = save;
 exports.clearDb = clearDb;
+exports.search = search;
+exports.getNodeChildren = getNodeChildren;
