@@ -16,6 +16,10 @@ handle["/clearDb"] = requestHandlers.clearDb;
 handle["/loadMenuData"] = requestHandlers.loadMenuData;
 handle["/shortcuts"] = requestHandlers.shortcuts;
 handle["/getNode"] = requestHandlers.getNode;
+handle["/loadScriptContent"] = requestHandlers.loadScriptContent; 
+handle["/saveScriptContent"] = requestHandlers.saveScriptContent; 
+handle["/saveNewScript"] = requestHandlers.saveNewScript; 
+handle["/deleteScript"] = requestHandlers.deleteScript; 
 
 server.start(router.route, handle);
 mongoserver.connect();

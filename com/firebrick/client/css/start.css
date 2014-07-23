@@ -14,6 +14,7 @@ body {
 	margin-top: 45px;
 	-moz-border-radius: 15px;
 	border-radius: 15px;
+	width: 100%
 }
 
 .content {
@@ -105,4 +106,61 @@ body {
 #jsddm li ul li a:hover {
 	background: #5faceb;
 	color: white;
+}
+
+#message {
+	margin: 5px;
+	border: 1px solid gray;
+	height: 20px;
+	width: auto;
+}
+
+#buttons {
+	display: inline-block;
+	height: 100%;
+	width: 50px;
+	min-height: 50px;
+	padding-left: 10px;
+}
+
+#buttons input[type="submit"] {
+	display: inline-block;
+	width: 32px;
+	min-height: 32px;
+	opacity: 0.7;
+	border: 0;
+}
+
+#buttons input[type="text"] {
+	width: 90px;
+	margin: 5px;
+	border: 0;
+	background-color: transparent
+}
+
+#buttons input[type="submit"]:disabled {
+	opacity: 0.1;
+}
+
+#save_btn {
+	background: url(images/save.jpg);
+}
+
+#buttons input[type="submit"]:hover {
+	opacity: 1;
+}
+
+#buttons input[type="submit"]:hover:disabled {
+	opacity: 0.1;
+}
+
+#delete_btn {
+	background: url(images/delete.png);
+	width: 24px;
+	height: 24px;
+    background-repeat: no-repeat;
+}
+
+#run_btn {
+	background: url(images/start.png);
 }

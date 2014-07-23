@@ -56,7 +56,8 @@ function loadFolder(response, postData, urlParams) {
 			state : {
 				'opened' : true
 			}
-		});		directoryToJson.dirTree(nodePath, "", arrayResult);
+		});
+		directoryToJson.dirTree(nodePath, "", arrayResult);
 
 		crudActions.save(arrayResult, function(err) {
 			if (err !== null) {
@@ -88,36 +89,29 @@ function loadFolder(response, postData, urlParams) {
 }
 
 function executeScript(response, postData, urlParams) {
-	var scriptName = "userscripts/default.js";
-
-	fs.writeFile('./' + scriptName, urlParams.scriptBody, function(err) {
-		if (err) {
-			console.log(err);
-		} else {
-			console.log("The file was saved!");
-			exec("node " + scriptName, {
-				timeout : 10000,
-				maxBuffer : 20000 * 1024
-			}, function(error, stdout, stderr) {
-				if ((error === null && stderr === null) || stderr === "") {
+	if (urlParams !== null && urlParams.scriptName !== null
+			&& urlParams.scriptBody !== null) {
+		fs.writeFile('./userscripts/' + urlParams.scriptName, urlParams.scriptBody, function(err) {
+			if (err) {
+				console.log(err);
+			} else {
+				exec("node userscripts/" + urlParams.scriptName, {
+					timeout : 10000,
+					maxBuffer : 20000 * 1024
+				}, function(error, stdout, stderr) {
 					response.writeHead(200, {
 						"Content-Type" : "text/plain"
 					});
-					response.write(stdout);
+					if ((error === null && stderr === null) || stderr === "") {
+						response.write(stdout);
+					} else {
+						response.write(error + stderr);
+					}
 					response.end();
-				} else {
-					response.writeHead(200, {
-						"Content-Type" : "text/plain"
-					});
-					response.write(error + stderr);
-					response.end();
-					console.log("Request handler 'executeScript' failed:"
-							+ stderr);
-				}
-			});
-		}
-	});
-
+				});
+			}
+		});
+	}
 }
 
 function clearDb(response) {
@@ -146,8 +140,13 @@ function loadMenuData(response) {
 			response.writeHead(200, {
 				"Content-Type" : "application/text"
 			});
+			var scripts = [];
+			fs.readdirSync("./userscripts").map(function(child) {
+				scripts.push(child);
+			});
 			response.write(JSON.stringify({
-				'nodes' : result
+				'nodes' : result,
+				'scripts' : scripts
 			}));
 		}
 		response.end();
@@ -175,6 +174,86 @@ function getNode(response, postData, urlParams) {
 	}
 	;
 }
+
+function loadScriptContent(response, postData, urlParams) {
+	if (urlParams !== null && urlParams.scriptName !== null) {
+		fs.readFile('./userscripts/' + urlParams.scriptName, 'utf8', function(
+				err, data) {
+			if (err !== null) {
+				response.writeHead(500, {
+					"Content-Type" : "application/text"
+				});
+			} else {
+				response.writeHead(200, {
+					"Content-Type" : "application/text"
+				});
+				response.write(data);
+			}
+			response.end();
+		});
+	}
+	;
+}
+function saveNewScript(response, postData, urlParams) {
+	if (urlParams !== null && urlParams.scriptName !== null) {
+		try {
+			var tempFile = fs.openSync('./userscripts/' + urlParams.scriptName,
+					'a');
+			fs.closeSync(tempFile);
+			response.writeHead(200, {
+				"Content-Type" : "application/text"
+			});
+			response.write("SUCCESS");
+			response.end();
+		} catch (err) {
+			response.writeHead(500, {
+				"Content-Type" : "application/text"
+			});
+			response.end();
+		}
+	}
+}
+
+function saveScriptContent(response, postData, urlParams) {
+	if (urlParams !== null && urlParams.scriptName !== null
+			&& urlParams.scriptBody !== null) {
+		try {
+			fs.writeFileSync('./userscripts/' + urlParams.scriptName,
+					urlParams.scriptBody);
+			response.writeHead(200, {
+				"Content-Type" : "application/text"
+			});
+			response.write("SUCCESS");
+			response.end();
+		} catch (err) {
+			response.writeHead(500, {
+				"Content-Type" : "application/text"
+			});
+			response.end();
+		}
+	}
+	;
+}
+function deleteScript(response, postData, urlParams) {
+	if (urlParams !== null && urlParams.scriptName !== null) {
+		try {
+			var tempFile = fs.openSync('./userscripts/' + urlParams.scriptName,
+					'r');
+			fs.closeSync(tempFile);
+			fs.unlinkSync('./userscripts/' + urlParams.scriptName);
+			response.writeHead(200, {
+				"Content-Type" : "application/text"
+			});
+			response.write("SUCCESS");
+			response.end();
+		} catch (err) {
+			response.writeHead(500, {
+				"Content-Type" : "application/text"
+			});
+			response.end();
+		}
+	}
+}
 exports.clearDb = clearDb;
 exports.loadFolder = loadFolder;
 exports.executeScript = executeScript;
@@ -182,3 +261,7 @@ exports.index = index;
 exports.loadMenuData = loadMenuData;
 exports.shortcuts = shortcuts;
 exports.getNode = getNode;
+exports.loadScriptContent = loadScriptContent;
+exports.saveScriptContent = saveScriptContent;
+exports.deleteScript = deleteScript;
+exports.saveNewScript = saveNewScript;

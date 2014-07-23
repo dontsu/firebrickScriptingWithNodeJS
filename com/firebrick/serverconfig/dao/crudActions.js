@@ -30,6 +30,7 @@ function save(array, callback) {
 			});
 		} else {
 			callback(err);
+			db.close();
 		}
 	});
 }
@@ -48,6 +49,7 @@ function clearDb() {
 			} else {
 				console.log("Connection error:" + err);
 			}
+			db.close();
 		});
 	});
 }
@@ -119,6 +121,7 @@ function search(condition, columns, callback) {
 			+ "/investigationDb", function(err, db) {
 		if (err !== null || db === null) {
 			callback(err);
+			db.close();
 		} else {
 			var collection = db.collection('folderNodes');
 			collection.find(condition, columns).toArray(
@@ -128,6 +131,7 @@ function search(condition, columns, callback) {
 						} else {
 							callback(null, documents);
 						}
+						db.close();
 					});
 		}
 	});
