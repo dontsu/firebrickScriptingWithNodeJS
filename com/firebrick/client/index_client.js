@@ -20,29 +20,36 @@ $(document).ready(function() {
 
 });
 function disableScriptsButtons() {
-	if (ace.edit("editor").getValue().trim() !== "") {
+	if (ace.edit("editor").getValue().trim() !== ""
+			&& $("#script_name").val().trim() !== "") {
 		$("#run_btn").prop('disabled', false);
 		$("#save_btn").prop('disabled', false);
-	} else{
+	} else {
 		$("#run_btn").prop('disabled', true);
-		$("#save_btn").prop('disabled', true);		
+		$("#save_btn").prop('disabled', true);
 	}
-	if($("#script_name").val().trim() !== "" && $("#script_name").val().trim() !== "default.js"){
+	if ($("#script_name").val().trim() !== ""
+			&& $("#script_name").val().trim() !== "default.js") {
 		$("#delete_btn").prop('disabled', false);
-	}else{
-		$("#delete_btn").prop('disabled', true);		
+	} else {
+		$("#delete_btn").prop('disabled', true);
 	}
 }
 
 function executeScript() {
-	$.get("executeScript", {
+	$.getJSON("executeScript", {
 		scriptBody : ace.edit("editor").getValue(),
-		scriptName : $("#script_name").val()
+		scriptName : $("#script_name").val(),
+		nodeId : $("#location_path").val()
 	}).done(function(data) {
-		$("#result").html(data);
+		if (data.error != null && data.error !== "") {
+			displayError(data.error);
+		} else {
+			createTree(data.nodes);
+		}
 	}).fail(function(jqxhr, textStatus, error) {
 		var err = textStatus + ", " + error;
-		$("#result").html(err);
+		displayError("Request Failed: " + err);
 	});
 }
 
@@ -51,23 +58,44 @@ function saveScript() {
 		scriptName : $("#script_name").val(),
 		scriptBody : ace.edit("editor").getValue()
 	}).done(function(data) {
+		if (data.error != null && data.error !== "") {
+			displayError("Script could not be saved: " + error);
+		} else {
+			displaySuccessMessage("Script saved successfully");
+		}
 	}).fail(function(jqxhr, textStatus, error) {
+		var err = textStatus + ", " + error;
+		displayError("Request Failed: " + err);
 	});
 }
 
 function removeScript() {
-	$.get("deleteScript", {
-		scriptName : $("#script_name").val()
-	}).done(function(data) {
-		$("#result").html("");
-		$("#script_name").val("");
-		var editor = ace.edit("editor");
-		editor.setValue("");
-		disableScriptsButtons();
-		loadMenuData();
-	}).fail(function(jqxhr, textStatus, error) {
-		var err = textStatus + ", " + error;
-		console.log("Request Failed: " + err);
+	$("#remove_dialog").dialog({
+		resizable : false,
+		height : 140,
+		modal : true,
+		buttons : {
+			"Yes" : function() {
+				$.get("deleteScript", {
+					scriptName : $("#script_name").val()
+				}).done(function(data) {
+					$("#result").html("");
+					$("#script_name").val("");
+					var editor = ace.edit("editor");
+					editor.setValue("");
+					disableScriptsButtons();
+					loadMenuData();
+					displaySuccessMessage("File removed successfully.");
+				}).fail(function(jqxhr, textStatus, error) {
+					var err = textStatus + ", " + error;
+					displayError("Request Failed: " + err);
+				});
+				$(this).dialog("close");
+			},
+			Cancel : function() {
+				$(this).dialog("close");
+			}
+		}
 	});
 }
 
@@ -80,10 +108,14 @@ function loadFolder() {
 		$.getJSON("loadFolder", {
 			locationPath : $("#location_path").val()
 		}).done(function(data) {
-			createTree(data);
-			loadMenuData();
+			if (data.error != null && data.error !== "") {
+				displayError(data.error);
+			} else {
+				createTree(data);
+				loadMenuData();
+			}
 		}).fail(function(jqxhr, textStatus, error) {
-			console.log("Request Failed: " + textStatus + ", " + error);
+			displayError(error);
 		});
 	}
 }
@@ -102,13 +134,13 @@ function createTree(data) {
 						nodeId : node.id
 					}).done(
 							function(data) {
-								if (data !== null && data.nodes !== null
+								if (data != null && data.nodes !== null
 										&& data.nodes.length > 0) {
 									createTree(data.nodes);
 								}
 							}).fail(
 							function(jqxhr, textStatus, error) {
-								console.log("Request Failed: " + textStatus
+								displayError("Request Failed: " + textStatus
 										+ ", " + error);
 							});
 				}
@@ -116,5 +148,28 @@ function createTree(data) {
 		'core' : {
 			'data' : data
 		}
+	});
+}
+
+function displaySuccessMessage(messageTxt) {
+	var message = $("#message");
+	message.fadeIn(400, function() {
+		message.css("color", "green");
+		message.text(messageTxt);
+	});
+	message.fadeOut(10000, function() {
+		message.text("");
+		message.css("color", "red");
+	});
+}
+
+function displayError(error) {
+	$("#result").unblock();
+	var message = $("#message");
+	message.fadeIn(400, function() {
+		message.text(error);
+	});
+	message.fadeOut(10000, function() {
+		message.text("");
 	});
 }

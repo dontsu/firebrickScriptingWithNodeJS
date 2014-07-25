@@ -1,0 +1,28 @@
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0 auto;
+	background-image: url('images/bgr.JPG');
+	color: black;
+}
+
+table,thead,tbody,tr,th,td {
+	margin: 0px auto;
+	width: 900px;
+	padding: 8px;
+	border: 2px solid black;
+}
+table {
+	margin: 0px auto;
+	width: 900px;
+	padding: 8px;	
+	border: 4px solid black;
+	-moz-border-radius: 15px;
+	border-radius: 15px;
+}
+.title {
+	font-size: xx-large;
+	margin: 0px auto;
+	width: 360px;
+	font-style: italic;
+}

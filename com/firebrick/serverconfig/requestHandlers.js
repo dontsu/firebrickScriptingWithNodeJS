@@ -8,6 +8,7 @@ var exec = require("child_process").exec;
 var directoryToJson = require("./directoryToJson");
 var crudActions = require("./dao/crudActions");
 var path = require('path');
+var scriptRunner = require('./scriptRunner');
 
 function index(response) {
 	fs.readFile('./../client/html/index.html', function(err, html) {
@@ -45,152 +46,145 @@ function shortcuts(response) {
 
 function loadFolder(response, postData, urlParams) {
 	// hard-code at the moment until I find a way to ge if from the user
-	var nodePath = urlParams.locationPath;
-	if (nodePath !== null && nodePath.trim() !== '') {
-		var arrayResult = [];
-		arrayResult.push({
-			_id : nodePath,
-			parent : "",
-			name : path.basename(nodePath),
-			text : path.basename(nodePath),
-			state : {
-				'opened' : true
-			}
-		});
-		directoryToJson.dirTree(nodePath, "", arrayResult);
 
-		crudActions.save(arrayResult, function(err) {
-			if (err !== null) {
-				response.writeHead(500, {
-					"Content-Type" : "application/text"
-				});
+	try {
+		var nodePath = urlParams.locationPath;
+		if (nodePath !== null && nodePath.trim() !== '') {
+			var arrayResult = [];
+			arrayResult.push({
+				_id : nodePath,
+				parent : "",
+				name : path.basename(nodePath),
+				text : path.basename(nodePath),
+				state : {
+					'opened' : true
+				}
+			});
+			directoryToJson.dirTree(nodePath, "", arrayResult);
 
-				response.end();
-			} else {
-				crudActions.getNodeById(nodePath, true, function(err, result) {
-					if (err !== null) {
-						response.writeHead(500, {
-							"Content-Type" : "application/text"
-						});
+			crudActions.save(arrayResult, function(err) {
+				if (err !== null) {
+					sendErrorForResponse(response, err);
+				} else {
+					crudActions.getNodeById(nodePath, true, function(err,
+							result) {
+						if (err !== null) {
+							sendErrorForResponse(response, err);
+						} else {
+							response.writeHead(200, {
+								"Content-Type" : "application/json"
+							});
+							response.write(JSON.stringify(result));
+							response.end();
+						}
+					});
+				}
 
-						response.end();
-					} else {
-						response.writeHead(200, {
-							"Content-Type" : "application/json"
-						});
-						response.write(JSON.stringify(result));
-						response.end();
-					}
-				});
-			}
-
-		});
+			});
+		}
+	} catch (err) {
+		sendErrorForResponse(response, err);
 	}
 }
 
 function executeScript(response, postData, urlParams) {
 	if (urlParams !== null && urlParams.scriptName !== null
 			&& urlParams.scriptBody !== null) {
-		fs.writeFile('./userscripts/' + urlParams.scriptName, urlParams.scriptBody, function(err) {
-			if (err) {
-				console.log(err);
-			} else {
-				exec("node userscripts/" + urlParams.scriptName, {
-					timeout : 10000,
-					maxBuffer : 20000 * 1024
-				}, function(error, stdout, stderr) {
-					response.writeHead(200, {
-						"Content-Type" : "text/plain"
+		try {
+			fs.writeFile('./userscripts/' + urlParams.scriptName,
+					urlParams.scriptBody, function(err) {
+						if (err) {
+							sendErrorForResponse(response, err);
+						} else {
+							scriptRunner.run(urlParams, response);
+						}
 					});
-					if ((error === null && stderr === null) || stderr === "") {
-						response.write(stdout);
-					} else {
-						response.write(error + stderr);
-					}
-					response.end();
-				});
-			}
-		});
+		} catch (err) {
+			sendErrorForResponse(response, err);
+		}
 	}
 }
 
 function clearDb(response) {
-	var result = crudActions.clearDb();
-	if (result instanceof Error) {
-		response.writeHead(500, {
-			"Content-Type" : "application/text"
-		});
-		response.write(result);
-	} else {
+	try {
+		crudActions.clearDb();
 		response.writeHead(200, {
 			"Content-Type" : "application/text"
 		});
-		response.write("Ok");
+		response.write("SUCCESS");
+		response.end();
+	} catch (err) {
+		sendErrorForResponse(response, err);
 	}
-	response.end();
 }
 
 function loadMenuData(response) {
-	crudActions.getNodes(function(err, result) {
-		if (err !== null) {
-			response.writeHead(500, {
-				"Content-Type" : "application/text"
-			});
-		} else {
-			response.writeHead(200, {
-				"Content-Type" : "application/text"
-			});
-			var scripts = [];
-			fs.readdirSync("./userscripts").map(function(child) {
-				scripts.push(child);
-			});
-			response.write(JSON.stringify({
-				'nodes' : result,
-				'scripts' : scripts
-			}));
-		}
-		response.end();
-	});
-
-}
-
-function getNode(response, postData, urlParams) {
-	if (urlParams !== null && urlParams.nodeId !== null) {
-		crudActions.getNodeById(urlParams.nodeId, true, function(err, result) {
+	try {
+		crudActions.getNodes(function(err, result) {
 			if (err !== null) {
-				response.writeHead(500, {
-					"Content-Type" : "application/text"
-				});
+				sendErrorForResponse(response, err);
 			} else {
 				response.writeHead(200, {
 					"Content-Type" : "application/text"
 				});
+				var scripts = [];
+				fs.readdirSync("./userscripts").map(function(child) {
+					scripts.push(child);
+				});
 				response.write(JSON.stringify({
-					'nodes' : result
+					'nodes' : result,
+					'scripts' : scripts
 				}));
 			}
 			response.end();
 		});
+	} catch (err) {
+		sendErrorForResponse(response, err);
+	}
+}
+
+function getNode(response, postData, urlParams) {
+	if (urlParams !== null && urlParams.nodeId !== null) {
+		try {
+			crudActions.getNodeById(urlParams.nodeId, true, function(err,
+					result) {
+				if (err !== null) {
+					sendErrorForResponse(response, err);
+				} else {
+					response.writeHead(200, {
+						"Content-Type" : "application/text"
+					});
+					response.write(JSON.stringify({
+						'nodes' : result
+					}));
+					response.end();
+				}
+			});
+		} catch (err) {
+			sendErrorForResponse(response, err);
+		}
 	}
 	;
 }
 
 function loadScriptContent(response, postData, urlParams) {
 	if (urlParams !== null && urlParams.scriptName !== null) {
-		fs.readFile('./userscripts/' + urlParams.scriptName, 'utf8', function(
-				err, data) {
-			if (err !== null) {
-				response.writeHead(500, {
-					"Content-Type" : "application/text"
-				});
-			} else {
-				response.writeHead(200, {
-					"Content-Type" : "application/text"
-				});
-				response.write(data);
-			}
-			response.end();
-		});
+		try {
+			fs.readFile('./userscripts/' + urlParams.scriptName, 'utf8',
+					function(err, data) {
+						if (err !== null) {
+							sendErrorForResponse(response, err);
+						} else {
+							response.writeHead(200, {
+								"Content-Type" : "application/text"
+							});
+							response.write(data);
+							response.end();
+						}
+					});
+		} catch (err) {
+			sendErrorForResponse(response, err);
+		}
 	}
 	;
 }
@@ -206,10 +200,7 @@ function saveNewScript(response, postData, urlParams) {
 			response.write("SUCCESS");
 			response.end();
 		} catch (err) {
-			response.writeHead(500, {
-				"Content-Type" : "application/text"
-			});
-			response.end();
+			sendErrorForResponse(response, err);
 		}
 	}
 }
@@ -226,10 +217,7 @@ function saveScriptContent(response, postData, urlParams) {
 			response.write("SUCCESS");
 			response.end();
 		} catch (err) {
-			response.writeHead(500, {
-				"Content-Type" : "application/text"
-			});
-			response.end();
+			sendErrorForResponse(response, err);
 		}
 	}
 	;
@@ -247,12 +235,18 @@ function deleteScript(response, postData, urlParams) {
 			response.write("SUCCESS");
 			response.end();
 		} catch (err) {
-			response.writeHead(500, {
-				"Content-Type" : "application/text"
-			});
-			response.end();
+			sendErrorForResponse(response, err);
 		}
 	}
+}
+function sendErrorForResponse(response, ex) {
+	response.writeHead(200, {
+		"Content-Type" : "application/json"
+	});
+	response.write(JSON.stringify({
+		error : ex.toString()
+	}));
+	response.end();
 }
 exports.clearDb = clearDb;
 exports.loadFolder = loadFolder;

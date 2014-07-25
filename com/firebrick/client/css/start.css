@@ -11,7 +11,7 @@ body {
 	border: 2px solid white;
 	height: 50px;
 	padding: 5px;
-	margin-top: 45px;
+	margin-top: 55px;
 	-moz-border-radius: 15px;
 	border-radius: 15px;
 	width: 100%
@@ -110,9 +110,13 @@ body {
 
 #message {
 	margin: 5px;
-	border: 1px solid gray;
+	border: 0px solid gray;
 	height: 20px;
-	width: auto;
+	position: absolute;
+	margin-top: 30px;
+	color: red;
+	background: white;
+	color: red;
 }
 
 #buttons {
@@ -158,7 +162,7 @@ body {
 	background: url(images/delete.png);
 	width: 24px;
 	height: 24px;
-    background-repeat: no-repeat;
+	background-repeat: no-repeat;
 }
 
 #run_btn {

@@ -116,7 +116,7 @@ function getNodeChildren(parent, callback) {
 	});
 }
 
-function search(condition, columns, callback) {
+function search(condition, columns, callback, sortAndLimit) {
 	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
 			+ "/investigationDb", function(err, db) {
 		if (err !== null || db === null) {
@@ -124,7 +124,7 @@ function search(condition, columns, callback) {
 			db.close();
 		} else {
 			var collection = db.collection('folderNodes');
-			collection.find(condition, columns).toArray(
+			collection.find(condition, columns, sortAndLimit).toArray(
 					function(err, documents) {
 						if (err != null) {
 							callback(err, null);

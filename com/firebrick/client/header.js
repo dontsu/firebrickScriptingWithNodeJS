@@ -15,36 +15,47 @@ $(document).ready(function() {
 	loadMenuData();
 });
 function loadMenuData() {
-	$.getJSON("loadMenuData").done(
-			function(data) {
-				if (data.nodes !== null) {
-					var menu = $('#existingNodes');
-					menu.empty();
-					$.each(data.nodes, function(key, value) {
-						var html = "<li><a id='" + value._id
-								+ "' href='#' onclick='loadNode(this)'>"
-								+ value._id + "</a></li>";
-						menu.append(html);
-					});
-				}
-				if (data.scripts !== null) {
-					var scripts = $('#existingScripts');
-					scripts.empty();
-					$.each(data.scripts, function(key, value) {
-						var html = "<li><a id='" + value
-								+ "' href='#' onclick='loadScript(this)'>"
-								+ value + "</a></li>";
-						scripts.append(html);
-					});
-					var html = "<li><a id='new_script' href='#' onclick='createNewScript()'>"
-					+ " New script </a></li>";
-					scripts.append(html);
-					
-				}
+	$
+			.getJSON("loadMenuData")
+			.done(
+					function(data) {
+						if (data.nodes !== null) {
+							var menu = $('#existingNodes');
+							menu.empty();
+							$
+									.each(
+											data.nodes,
+											function(key, value) {
+												var html = "<li><a id='"
+														+ value._id
+														+ "' href='#' onclick='loadNode(this)'>"
+														+ value._id
+														+ "</a></li>";
+												menu.append(html);
+											});
+						}
+						if (data.scripts !== null) {
+							var scripts = $('#existingScripts');
+							scripts.empty();
+							$
+									.each(
+											data.scripts,
+											function(key, value) {
+												var html = "<li><a id='"
+														+ value
+														+ "' href='#' onclick='loadScript(this)'>"
+														+ value + "</a></li>";
+												scripts.append(html);
+											});
+							var html = "<li><a id='new_script' href='#' onclick='createNewScript()'>"
+									+ " New script </a></li>";
+							scripts.append(html);
 
-			}).fail(function(jqxhr, textStatus, error) {
+						}
 
-	});
+					}).fail(function(jqxhr, textStatus, error) {
+
+			});
 }
 
 function loadScript(element) {
@@ -52,12 +63,16 @@ function loadScript(element) {
 	$.get("loadScriptContent", {
 		scriptName : element.id
 	}).done(function(data) {
-		editor.setValue(data);
-		$("#script_name").val(element.id);
+		if (data.error != null && data.error !== "") {
+			displayError(data.error);
+		} else {
+			editor.setValue(data);
+			$("#script_name").val(element.id);
+		}
 		disableScriptsButtons();
 	}).fail(function(jqxhr, textStatus, error) {
-		editor.setValue("Can't load script " + element + " Error: " + error);
-		disableScriptsButtons();
+		var err = textStatus + ", " + error;
+		displayError("Script could not be executed: " + err);
 	});
 }
 
@@ -67,42 +82,47 @@ function loadNode(element) {
 }
 
 function createNewScript() {
-	//$(".content").block();
-    $( "#dialog" ).dialog({
-        resizable: false,
-        height:140,
-        modal: true,
-        buttons: {
-          "Ok": function() {
-        	$.get("saveNewScript", {
-        		scriptName : $("#new_script_name").val()
-        	}).done(function(data) {
-        		loadMenuData();
-        		$("#message").fadeOut(5);
-        		$("#message").val("New script saved succesfuly.");
-        		$("#message").fadeIn(25);
-        		$("#message").val("");
-        	});
-    		var editor = ace.edit("editor");
-    		editor.setValue("");
-    		$("#script_name").val($("#new_script_name").val());
-          	$("#new_script_name").val(""); 
-            $(this).dialog( "close" );
-        	disableScriptsButtons();
-          },
-          Cancel: function() {
-          	$("#new_script_name").val("");  
-            $(this).dialog( "close" );
-          }
-        }
-      });
+	$("#create_dialog").dialog({
+		resizable : false,
+		height : 140,
+		modal : true,
+		buttons : {
+			"Ok" : function() {
+				$.get("saveNewScript", {
+					scriptName : $("#new_script_name").val()
+				}).done(function(data) {
+					if (data.error != null && data.error !== "") {
+						displayError("Script could not be saved: " + error);
+					} else {
+						loadMenuData();
+						displaySuccessMessage("New script saved succesfuly.");
+					}
+				});
+				var editor = ace.edit("editor");
+				editor.setValue("");
+				$("#script_name").val($("#new_script_name").val());
+				$("#new_script_name").val("");
+				$(this).dialog("close");
+				disableScriptsButtons();
+			},
+			Cancel : function() {
+				$("#new_script_name").val("");
+				$(this).dialog("close");
+			}
+		}
+	});
 }
 
 function clearDb() {
 	$.get("clearDb").done(function(data) {
-		location.reload();
+		if (data.error != null && data.error !== "") {
+			displayError(data.error);
+		} else {
+			location.reload();
+			displaySuccessMessage("Database cleared successfully.");
+		}
 	}).fail(function(jqxhr, textStatus, error) {
-		alert("Clear failed: " + error);
+		displayError("Clear db Failed: " + err);
 	});
 }
 
