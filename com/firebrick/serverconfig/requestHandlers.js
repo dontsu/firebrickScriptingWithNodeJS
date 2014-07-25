@@ -45,8 +45,6 @@ function shortcuts(response) {
 }
 
 function loadFolder(response, postData, urlParams) {
-	// hard-code at the moment until I find a way to ge if from the user
-
 	try {
 		var nodePath = urlParams.locationPath;
 		if (nodePath !== null && nodePath.trim() !== '') {
@@ -91,14 +89,11 @@ function executeScript(response, postData, urlParams) {
 	if (urlParams !== null && urlParams.scriptName !== null
 			&& urlParams.scriptBody !== null) {
 		try {
-			fs.writeFile('./userscripts/' + urlParams.scriptName,
-					urlParams.scriptBody, function(err) {
-						if (err) {
-							sendErrorForResponse(response, err);
-						} else {
-							scriptRunner.run(urlParams, response);
-						}
-					});
+			var script = './userscripts/' + urlParams.scriptName;
+			fs.writeFileSync(script,
+					urlParams.scriptBody);
+			delete require.cache[require.resolve(script)];
+			scriptRunner.run(urlParams, response);
 		} catch (err) {
 			sendErrorForResponse(response, err);
 		}
