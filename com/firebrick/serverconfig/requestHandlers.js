@@ -9,9 +9,28 @@ var directoryToJson = require("./directoryToJson");
 var crudActions = require("./dao/crudActions");
 var path = require('path');
 var scriptRunner = require('./scriptRunner');
+var mongoserver = require("./dao/mongoserver");
+var mountedDevices = require("./mountedDevices");
 
 function index(response) {
 	fs.readFile('./../client/html/index.html', function(err, html) {
+		if (err) {
+			response.writeHeader(404, {
+				"Content-Type" : "text/html"
+			});
+			response.write(err);
+		} else {
+			response.writeHeader(200, {
+				"Content-Type" : "text/html"
+			});
+			response.write(html);
+		}
+		response.end();
+	});
+}
+
+function guide(response) {
+	fs.readFile('./../client/html/user_guide.html', function(err, html) {
 		if (err) {
 			response.writeHeader(404, {
 				"Content-Type" : "text/html"
@@ -46,7 +65,7 @@ function shortcuts(response) {
 
 function loadFolder(response, postData, urlParams) {
 	try {
-		var nodePath = urlParams.locationPath;
+		var nodePath = path.normalize(urlParams.locationPath);
 		if (nodePath !== null && nodePath.trim() !== '') {
 			var arrayResult = [];
 			arrayResult.push({
@@ -90,8 +109,7 @@ function executeScript(response, postData, urlParams) {
 			&& urlParams.scriptBody !== null) {
 		try {
 			var script = './userscripts/' + urlParams.scriptName;
-			fs.writeFileSync(script,
-					urlParams.scriptBody);
+			fs.writeFileSync(script, urlParams.scriptBody);
 			delete require.cache[require.resolve(script)];
 			scriptRunner.run(urlParams, response);
 		} catch (err) {
@@ -103,11 +121,7 @@ function executeScript(response, postData, urlParams) {
 function clearDb(response) {
 	try {
 		crudActions.clearDb();
-		response.writeHead(200, {
-			"Content-Type" : "application/text"
-		});
-		response.write("SUCCESS");
-		response.end();
+		sendSuccessForResponse(response);
 	} catch (err) {
 		sendErrorForResponse(response, err);
 	}
@@ -116,7 +130,7 @@ function clearDb(response) {
 function loadMenuData(response) {
 	try {
 		crudActions.getNodes(function(err, result) {
-			if (err !== null) {
+			if (err != null) {
 				sendErrorForResponse(response, err);
 			} else {
 				response.writeHead(200, {
@@ -126,12 +140,19 @@ function loadMenuData(response) {
 				fs.readdirSync("./userscripts").map(function(child) {
 					scripts.push(child);
 				});
-				response.write(JSON.stringify({
-					'nodes' : result,
-					'scripts' : scripts
-				}));
+				mountedDevices.getList(function(error, devices) {
+					if (error != null) {
+						sendErrorForResponse(response, err);
+					} else {
+						response.write(JSON.stringify({
+							'nodes' : result,
+							'scripts' : scripts,
+							'devices' : devices
+						}));
+						response.end();
+					}
+				});
 			}
-			response.end();
 		});
 	} catch (err) {
 		sendErrorForResponse(response, err);
@@ -189,11 +210,7 @@ function saveNewScript(response, postData, urlParams) {
 			var tempFile = fs.openSync('./userscripts/' + urlParams.scriptName,
 					'a');
 			fs.closeSync(tempFile);
-			response.writeHead(200, {
-				"Content-Type" : "application/text"
-			});
-			response.write("SUCCESS");
-			response.end();
+			sendSuccessForResponse(response);
 		} catch (err) {
 			sendErrorForResponse(response, err);
 		}
@@ -206,11 +223,7 @@ function saveScriptContent(response, postData, urlParams) {
 		try {
 			fs.writeFileSync('./userscripts/' + urlParams.scriptName,
 					urlParams.scriptBody);
-			response.writeHead(200, {
-				"Content-Type" : "application/text"
-			});
-			response.write("SUCCESS");
-			response.end();
+			sendSuccessForResponse(response);
 		} catch (err) {
 			sendErrorForResponse(response, err);
 		}
@@ -224,16 +237,13 @@ function deleteScript(response, postData, urlParams) {
 					'r');
 			fs.closeSync(tempFile);
 			fs.unlinkSync('./userscripts/' + urlParams.scriptName);
-			response.writeHead(200, {
-				"Content-Type" : "application/text"
-			});
-			response.write("SUCCESS");
-			response.end();
+			sendSuccessForResponse(response);
 		} catch (err) {
 			sendErrorForResponse(response, err);
 		}
 	}
 }
+
 function sendErrorForResponse(response, ex) {
 	response.writeHead(200, {
 		"Content-Type" : "application/json"
@@ -243,6 +253,73 @@ function sendErrorForResponse(response, ex) {
 	}));
 	response.end();
 }
+function sendSuccessForResponse(response, info) {
+	if (info == null) {
+		response.writeHead(200, {
+			"Content-Type" : "application/text"
+		});
+		response.write("SUCCESS");
+	} else {
+		response.writeHead(200, {
+			"Content-Type" : "application/json"
+		});
+		response.write(JSON.stringify({
+			info : info.toString()
+		}));
+	}
+	response.end();
+}
+
+function startMongoServer(response) {
+	try {
+		mongoserver.start(function(err, info) {
+			if (err != null) {
+				sendErrorForResponse(response, err);
+			} else {
+				sendSuccessForResponse(response, info);
+				mongoserver.createIndex();
+			}
+		});
+	} catch (err) {
+		sendErrorForResponse(response, err);
+	}
+}
+
+function stopMongoServer(response) {
+	try {
+		mongoserver.stop(function(err, info) {
+			if (err != null) {
+				sendErrorForResponse(response, error);
+			} else {
+				sendSuccessForResponse(response, info);
+			}
+		});
+	} catch (err) {
+		sendErrorForResponse(response, err);
+	}
+}
+
+function repairMongoServer(response) {
+	try {
+		mongoserver.repair(function(error, info) {
+			if (error != null) {
+				sendErrorForResponse(response, error);
+			} else {
+				if (info == null) {
+					startMongoServer(response);
+				} else {
+					sendSuccessForResponse(response, info);
+				}
+			}
+		});
+	} catch (err) {
+		sendErrorForResponse(response, err);
+	}
+}
+
+exports.repairMongoServer = repairMongoServer;
+exports.startMongoServer = startMongoServer;
+exports.stopMongoServer = stopMongoServer;
 exports.clearDb = clearDb;
 exports.loadFolder = loadFolder;
 exports.executeScript = executeScript;
@@ -254,3 +331,4 @@ exports.loadScriptContent = loadScriptContent;
 exports.saveScriptContent = saveScriptContent;
 exports.deleteScript = deleteScript;
 exports.saveNewScript = saveNewScript;
+exports.guide = guide;

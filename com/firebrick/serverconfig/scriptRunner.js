@@ -12,7 +12,7 @@ function run(urlParams, response) {
 
 			} else {
 				response.write(JSON.stringify({
-					error : err.toString()
+					error : error.toString()
 				}));
 			}
 			response.end();

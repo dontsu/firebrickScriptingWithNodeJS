@@ -7,55 +7,68 @@ var closetimer = 0;
 var ddmenuitem = 0;
 
 $(document).ready(function() {
-	$('#jsddm > li').bind('mouseover', jsddm_open);
-	$('#jsddm > li').bind('mouseout', jsddm_timer);
+	$('#jsddm > li').bind('mouseover', jsddmOpen);
+	$('#jsddm > li').bind('mouseout', jsddmTimer);
 	$("#clearDb").click(clearDb);
+	$("#startMongoDb").click(startServerDb);
+	$("#stopMongoDb").click(stopServerDb);
+	$("#repairMongoDb").click(repairServerDb);
 
-	document.onclick = jsddm_close;
+	document.oncclick = jsddmClose;
 	loadMenuData();
 });
+
 function loadMenuData() {
-	$
-			.getJSON("loadMenuData")
-			.done(
-					function(data) {
-						if (data.nodes !== null) {
-							var menu = $('#existingNodes');
-							menu.empty();
-							$
-									.each(
-											data.nodes,
-											function(key, value) {
-												var html = "<li><a id='"
-														+ value._id
-														+ "' href='#' onclick='loadNode(this)'>"
-														+ value._id
-														+ "</a></li>";
-												menu.append(html);
-											});
-						}
-						if (data.scripts !== null) {
-							var scripts = $('#existingScripts');
-							scripts.empty();
-							$
-									.each(
-											data.scripts,
-											function(key, value) {
-												var html = "<li><a id='"
-														+ value
-														+ "' href='#' onclick='loadScript(this)'>"
-														+ value + "</a></li>";
-												scripts.append(html);
-											});
-							var html = "<li><a id='new_script' href='#' onclick='createNewScript()'>"
-									+ " New script </a></li>";
-							scripts.append(html);
+	$.getJSON("loadMenuData").done(function(data) {
+		createNodes(data);
+		createScriptList(data);
+		createDeviceList(data);
+	}).fail(function(jqxhr, textStatus, error) {
+		var err = textStatus + ", " + error;
+		displayError("Script could not be executed: " + err);
+	});
+}
 
-						}
+function createNodes(data) {
+	if (data.nodes !== null) {
+		var menu = $('#existingNodes');
+		menu.empty();
+		$.each(data.nodes, function(key, value) {
+			var html = "<li><a id='" + value._id
+					+ "' href='#' onclick='loadNode(this)'>" + value._id
+					+ "</a></li>";
+			menu.append(html);
+		});
+	}
+}
 
-					}).fail(function(jqxhr, textStatus, error) {
+function createScriptList(data) {
+	if (data.scripts !== null) {
+		var scripts = $('#existingScripts');
+		scripts.empty();
+		$.each(data.scripts, function(key, value) {
+			var html = "<li><a id='" + value
+					+ "' href='#' onclick='loadScript(this)'>" + value
+					+ "</a></li>";
+			scripts.append(html);
+		});
+		var html = "<li><a id='new_script' href='#' onclick='createNewScript()'>"
+				+ " New script </a></li>";
+		scripts.append(html);
+	}
+}
 
-			});
+function createDeviceList(data) {
+	if (data.devices !== null) {
+		var devices = $('#mountedDevices');
+		devices.empty();
+		$.each(data.devices, function(key, value) {
+			var html = "<li><a id='" + value
+			+ "' href='#' onclick='loadNode(this)'>" + value
+			+ "</a></li>";
+			devices.append(html);
+		});
+	}
 }
 
 function loadScript(element) {
@@ -78,7 +91,7 @@ function loadScript(element) {
 
 function loadNode(element) {
 	$("#location_path").val(element.id);
-	loadFolder();
+	getNode(element.id);
 }
 
 function createNewScript() {
@@ -114,6 +127,61 @@ function createNewScript() {
 }
 
 function clearDb() {
+	var dialogBox = $("#remove_dialog");
+	dialogBox.html("Do you really want to clear the database? ");
+	dialogBox.dialog({
+		resizable : false,
+		height : 140,
+		modal : true,
+		buttons : {
+			"Yes" : function() {
+				sendRequestToClearTheDb();
+				$(this).dialog("close");
+			},
+			Cancel : function() {
+				$(this).dialog("close");
+			}
+		}
+	});
+}
+
+function startServerDb() {
+	$.get("startMongoServer").done(function(data) {
+		if (data.error != null && data.error !== "") {
+			displayError(data.error);
+		} else {
+			displaySuccessMessage(data.info);
+		}
+	}).fail(function(jqxhr, textStatus, error) {
+		displayError("Server could not be started: " + error);
+	});
+}
+
+function stopServerDb() {
+	$.get("stopMongoServer").done(function(data) {
+		if (data.error != null && data.error !== "") {
+			displayError(data.error);
+		} else {
+			displaySuccessMessage(data.info);
+		}
+	}).fail(function(jqxhr, textStatus, error) {
+		displayError("Server could not be stopped: " + error);
+	});
+}
+
+function repairServerDb() {
+	$.get("repairMongoServer").done(function(data) {
+		if (data.error != null && data.error !== "") {
+			displayError(data.error);
+		} else {
+			displaySuccessMessage(data.info);
+		}
+	}).fail(function(jqxhr, textStatus, error) {
+		displayError("Server could not be repaired: " + error);
+	});
+}
+
+function sendRequestToClearTheDb() {
 	$.get("clearDb").done(function(data) {
 		if (data.error != null && data.error !== "") {
 			displayError(data.error);
@@ -126,22 +194,22 @@ function clearDb() {
 	});
 }
 
-function jsddm_open() {
-	jsddm_canceltimer();
-	jsddm_close();
+function jsddmOpen() {
+	jsddmCanceltimer();
+	jsddmClose();
 	ddmenuitem = $(this).find('ul').css('visibility', 'visible');
 }
 
-function jsddm_close() {
+function jsddmClose() {
 	if (ddmenuitem)
 		ddmenuitem.css('visibility', 'hidden');
 }
 
-function jsddm_timer() {
-	closetimer = window.setTimeout(jsddm_close, timeout);
+function jsddmTimer() {
+	closetimer = window.setTimeout(jsddmClose, timeout);
 }
 
-function jsddm_canceltimer() {
+function jsddmCanceltimer() {
 	if (closetimer) {
 		window.clearTimeout(closetimer);
 		closetimer = null;

@@ -15,7 +15,7 @@ function dirTree(filename, parent, array) {
 		lastModified : stats.mtime,
 		accessedTime : stats.atime,
 		createdTime : stats.ctime,
-		extention : path.extname(filename).replace(".", "").toLowerCase(),
+		extention : stats.isDirectory() ? "" : path.extname(filename).replace(".", "").toLowerCase(),
 		// these attributes are used for JStree to display this json
 		text : path.basename(filename),
 		state : {

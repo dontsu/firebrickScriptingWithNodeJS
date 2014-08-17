@@ -20,12 +20,14 @@
 		<ul id="jsddm">
 			<li><a href="#">Db actions</a>
 				<ul>
+					<li><a id="startMongoDb" href="#">Start mongo db</a></li>
+					<li><a id="stopMongoDb" href="#">Stop mongo db</a></li>
+					<li><a id="repairMongoDb" href="#">Repair & start mongo db</a></li>
 					<li><a id="clearDb" href="#">Clear db</a></li>
 				</ul>
 			</li>
 			<li><a href="#">Mounted devices</a>
 				<ul id="mountedDevices">
-					<li><a href="#">Slide Effect</a></li>
 				</ul></li>
 			<li><a href="#">Existing nodes</a>
 				<ul id="existingNodes">
@@ -41,17 +43,22 @@
 				<ul>
 					<li><a target="_blank" href="shortcuts">Code editor shortcuts</a></li>
 					<li><a target="_blank" href="http://digitalfire.ucd.ie/?page_id=1011">About Firebrick</a></li>
-					<li><a target="_blank" href="#">About this scripting module</a></li>
+					<li><a target="_blank" href="guide">User guide</a></li>
 				</ul>
 			</li>
 		</ul>
 	</div>
 	<div class="content">
-		<a id="message">yudsnkdsnkldsjk. dfjkdfjksdf</a>
+		<a id="message"></a>
 		<div class="location">
 			Please select the folder of mounted image: 
 			<input id="location_path" style="width: 450px;" value=""> 
 			<input id="location_submit" type="submit" value="Ok">
+			<div id="legend">
+			<a class="jstree-info c">Creation date & time</a>
+			<a class="jstree-info a">Access date & time</a>
+			<a class="jstree-info m">Last modification date & time</a>
+			</div>
 		</div>
 		<div class="bottom">
 			<div id="editor"
@@ -72,7 +79,7 @@
 		Script name:<input id="new_script_name" style="width: 150px;" value=""> 
 	</div>
 	<div id="remove_dialog" style="display:none; z-index: 999; min-height: 40px; height: 65px;">
-		Do you really want to remove this script? 
+		
 	</div>
 </body>
 </html>

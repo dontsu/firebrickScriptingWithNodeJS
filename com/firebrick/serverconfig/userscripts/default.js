@@ -1,13 +1,10 @@
 var dbActions = require("./../dao/crudActions");
 
 function execute(urlParams, callback){
-    dbActions.getNodeById(urlParams.nodeId, true, function(err, documents) {
-        if (err !== null) {
-            callback(err);  
-        } else{
+    dbActions.search({extention:{ $in: ["doc", "docx"] }},{}, 
+    function(err, documents) {
             callback(err,documents);
-        }
-    });
+    }, { sort: { createdTime: -1 , lastModified: -1 }, limit: 40 });
 
 }
 

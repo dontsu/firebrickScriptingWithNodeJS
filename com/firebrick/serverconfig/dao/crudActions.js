@@ -2,15 +2,14 @@
  * This file will contain the db queries
  */
 
-var MongoClient = require('mongodb').MongoClient;
+var mongoServer = require('./mongoserver');
 var config = require("./config.json");
 
 /*
  * Save the json to the db
  */
 function save(array, callback) {
-	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
-			+ "/investigationDb", function(err, db) {
+	mongoServer.getConnection(function(err, db) {
 		if (!err && db !== null) {
 			var collection = db.collection('folderNodes');
 			var bulk = collection.initializeUnorderedBulkOp();
@@ -39,18 +38,21 @@ function save(array, callback) {
  * Clear all the data from the database
  */
 function clearDb() {
-	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
-			+ "/investigationDb", function(err, db) {
-		var collection = db.collection('folderNodes');
-		collection.remove({}, function(err, r) {
-			if (!err) {
-				return new Error(err);
-				console.log("Collection cleared successful");
-			} else {
-				console.log("Connection error:" + err);
+	mongoServer.getConnection(function(err, db) {
+		if (db != null) {
+			var collection = db.collection('folderNodes');
+			if (collection != null) {
+				collection.remove({}, function(err, r) {
+					if (!err) {
+						return new Error(err);
+						console.log("Collection cleared successful");
+					} else {
+						console.log("Connection error:" + err);
+					}
+					db.close();
+				});
 			}
-			db.close();
-		});
+		}
 	});
 }
 
@@ -62,7 +64,10 @@ function getNodeById(nodeId, includeChildren, callback) {
 		"text" : true,
 		"_id" : true,
 		"extention" : true,
-		"parent" : true
+		"parent" : true,
+		"createdTime" : true,
+		"lastModified" : true,
+		"accessedTime" : true
 	}, function(err, documents) {
 		if (includeChildren && documents !== null && documents.length == 1) {
 			getNodeChildren(documents[0]._id, function(err, children) {
@@ -106,7 +111,10 @@ function getNodeChildren(parent, callback) {
 		"state" : true,
 		"text" : true,
 		"_id" : true,
-		"extention" : true
+		"extention" : true,
+		"createdTime" : true,
+		"lastModified" : true,
+		"accessedTime" : true
 	}, function(err, documents) {
 		if (err != null) {
 			callback(err, null);
@@ -117,11 +125,9 @@ function getNodeChildren(parent, callback) {
 }
 
 function search(condition, columns, callback, sortAndLimit) {
-	MongoClient.connect("mongodb://" + config.host + ":" + config.db_port
-			+ "/investigationDb", function(err, db) {
+	mongoServer.getConnection(function(err, db) {
 		if (err !== null || db === null) {
 			callback(err);
-			db.close();
 		} else {
 			var collection = db.collection('folderNodes');
 			collection.find(condition, columns, sortAndLimit).toArray(

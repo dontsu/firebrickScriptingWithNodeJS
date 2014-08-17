@@ -15,6 +15,7 @@ $(document).ready(function() {
 	$("#delete_btn").click(removeScript);
 	$("#save_btn").click(saveScript);
 	$("#location_submit").click(loadFolder);
+	$("#location_path").focusout(removeError);
 	loadFolder();
 	disableScriptsButtons();
 
@@ -37,20 +38,25 @@ function disableScriptsButtons() {
 }
 
 function executeScript() {
-	$.getJSON("executeScript", {
-		scriptBody : ace.edit("editor").getValue(),
-		scriptName : $("#script_name").val(),
-		nodeId : $("#location_path").val()
-	}).done(function(data) {
-		if (data.error != null && data.error !== "") {
-			displayError(data.error);
-		} else {
-			createTree(data.nodes);
-		}
-	}).fail(function(jqxhr, textStatus, error) {
-		var err = textStatus + ", " + error;
-		displayError("Request Failed: " + err);
-	});
+	var _localPath = $("#location_path").val();
+	if (_localPath && _localPath.trim() != "") {
+		$.getJSON("executeScript", {
+			scriptBody : ace.edit("editor").getValue(),
+			scriptName : $("#script_name").val(),
+			nodeId : _localPath
+		}).done(function(data) {
+			if (data.error != null && data.error !== "") {
+				displayError(data.error);
+			} else {
+				createTree(data.nodes);
+			}
+		}).fail(function(jqxhr, textStatus, error) {
+			var err = textStatus + ", " + error;
+			displayError("Request Failed: " + err);
+		});
+	} else {
+		$("#location_path").css("border", "1px solid red");
+	}
 }
 
 function saveScript() {
@@ -70,14 +76,17 @@ function saveScript() {
 }
 
 function removeScript() {
-	$("#remove_dialog").dialog({
+	var dialogBox = $("#remove_dialog");
+	var _scriptName = $("#script_name").val();
+	dialogBox.html("Do you really want to remove " + _scriptName + " script? ");
+	dialogBox.dialog({
 		resizable : false,
 		height : 140,
 		modal : true,
 		buttons : {
 			"Yes" : function() {
 				$.get("deleteScript", {
-					scriptName : $("#script_name").val()
+					scriptName : _scriptName
 				}).done(function(data) {
 					$("#result").html("");
 					$("#script_name").val("");
@@ -125,31 +134,29 @@ function createTree(data) {
 	resultDiv.unblock();
 	resultDiv.empty();
 	resultDiv.html('<div id="tree_folder"></div>');
-	$('#tree_folder').on(
-			'changed.jstree',
-			function(e, data) {
-				if (data.selected.length > 0) {
-					var node = data.instance.get_node(data.selected[0]);
-					$.getJSON("getNode", {
-						nodeId : node.id
-					}).done(
-							function(data) {
-								if (data != null && data.nodes !== null
-										&& data.nodes.length > 0) {
-									createTree(data.nodes);
-								}
-							}).fail(
-							function(jqxhr, textStatus, error) {
-								displayError("Request Failed: " + textStatus
-										+ ", " + error);
-							});
-				}
-			}).jstree({
+	$('#tree_folder').on('changed.jstree', function(e, data) {
+		if (data.selected.length > 0) {
+			var node = data.instance.get_node(data.selected[0]);
+			getNode(node.id);
+		}
+	}).jstree({
 		'core' : {
 			'data' : data
 		}
 	});
 }
+
+function getNode(nodeId) {
+	$.getJSON("getNode", {
+		nodeId : nodeId
+	}).done(function(data) {
+		if (data != null && data.nodes !== null && data.nodes.length > 0) {
+			createTree(data.nodes);
+		}
+	}).fail(function(jqxhr, textStatus, error) {
+		displayError("Request Failed: " + textStatus + ", " + error);
+	});
+};
 
 function displaySuccessMessage(messageTxt) {
 	var message = $("#message");
@@ -172,4 +179,8 @@ function displayError(error) {
 	message.fadeOut(10000, function() {
 		message.text("");
 	});
+}
+
+function removeError() {
+	$("#location_path").css("border", "1px solid inset");
 }
