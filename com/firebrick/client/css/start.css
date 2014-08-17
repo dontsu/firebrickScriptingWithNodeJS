@@ -16,14 +16,28 @@ body {
 	border-radius: 15px;
 	width: 98%
 }
+
 #legend {
-	background-color:white;
-	float:right;
+	background-color: white;
+	float: right;
 }
+
 .content {
 	display: inline-block;
 	width: 100%;
 	padding: 5px;
+}
+
+.guide_content {
+	display: inline-block;
+	width: 100%;
+	padding: 5px;
+	color: black;
+}
+
+.guide_content div{
+	padding: 15px;
+	color: black;
 }
 
 .right {

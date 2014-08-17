@@ -623,21 +623,7 @@
 	background-position: 0 0
 }
 
-.jstree-themeicon-customxml,.jstree-themeicon-custom7z,
-.jstree-themeicon-customavi,.jstree-themeicon-custombat,
-.jstree-themeicon-custombmp,.jstree-themeicon-customcr2,
-.jstree-themeicon-customdat,.jstree-themeicon-customdoc,
-.jstree-themeicon-customdocx,.jstree-themeicon-customepub,
-.jstree-themeicon-customflv,.jstree-themeicon-customgdoc,
-.jstree-themeicon-customgif,.jstree-themeicon-customhtml,
-.jstree-themeicon-customxhtml,.jstree-themeicon-customjar,
-.jstree-themeicon-custommobi,.jstree-themeicon-custommp3,
-.jstree-themeicon-customodt, .jstree-themeicon-custompdf,
-.jstree-themeicon-customtxt,.jstree-themeicon-customwav,
-.jstree-themeicon-customxls,.jstree-themeicon-customxlsx,
-.jstree-themeicon-customxps,.jstree-themeicon-customzip,
-.jstree-themeicon-customcsv,.jstree-themeicon-customjpg,
-.jstree-themeicon-customjpeg,.jstree-themeicon-customlog
+.jstree-themeicon-customxml,.jstree-themeicon-custom7z,.jstree-themeicon-customavi,.jstree-themeicon-custombat,.jstree-themeicon-custombmp,.jstree-themeicon-customcr2,.jstree-themeicon-customdat,.jstree-themeicon-customdoc,.jstree-themeicon-customdocx,.jstree-themeicon-customepub,.jstree-themeicon-customflv,.jstree-themeicon-customgdoc,.jstree-themeicon-customgif,.jstree-themeicon-customhtml,.jstree-themeicon-customxhtml,.jstree-themeicon-customjar,.jstree-themeicon-custommobi,.jstree-themeicon-custommp3,.jstree-themeicon-customodt,.jstree-themeicon-custompdf,.jstree-themeicon-customtxt,.jstree-themeicon-customwav,.jstree-themeicon-customxls,.jstree-themeicon-customxlsx,.jstree-themeicon-customxps,.jstree-themeicon-customzip,.jstree-themeicon-customcsv,.jstree-themeicon-customjpg,.jstree-themeicon-customjpeg,.jstree-themeicon-customlog
 	{
 	display: inline-block;
 	background: url('images/sprite.png') no-repeat;
@@ -688,7 +674,7 @@
 	height: 16px;
 }
 
-.jstree-themeicon-customdoc, .jstree-themeicon-customdocx {
+.jstree-themeicon-customdoc,.jstree-themeicon-customdocx {
 	background-position: -3px -137px;
 	width: 16px;
 	height: 16px;
@@ -718,7 +704,7 @@
 	height: 16px;
 }
 
-.jstree-themeicon-customhtml, .jstree-themeicon-customxhtml {
+.jstree-themeicon-customhtml,.jstree-themeicon-customxhtml {
 	background-position: -3px -232px;
 	width: 16px;
 	height: 16px;
@@ -766,7 +752,7 @@
 	height: 16px;
 }
 
-.jstree-themeicon-customxls, .jstree-themeicon-customxlsx {
+.jstree-themeicon-customxls,.jstree-themeicon-customxlsx {
 	background-position: -3px -384px;
 	width: 16px;
 	height: 16px;
@@ -790,7 +776,7 @@
 	height: 16px;
 }
 
-.jstree-themeicon-customjpg, .jstree-themeicon-customjpeg {
+.jstree-themeicon-customjpg,.jstree-themeicon-customjpeg {
 	background-position: -3px -460px;
 	width: 15px;
 	height: 17px;
@@ -1346,4 +1332,18 @@
 .jstree-default>.jstree-container-ul>.jstree-node {
 	margin-left: 0;
 	margin-right: 0
+}
+
+.jstree-info {
+	margin-left: 10px;
+	font-style: italic;
+}
+.a {
+	color:rgb(22, 204, 22);
+}
+.c{
+	color:rgb(255, 21, 152);
+}
+.m {
+	color:blue;
 }

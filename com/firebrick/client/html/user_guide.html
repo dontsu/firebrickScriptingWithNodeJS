@@ -7,7 +7,196 @@
 
 </head>
 <body>
-	<div class="content"></div>
+	<div class="guide_content">
+	//TODO - to be redesigned and reviewed
+		<div>Based on EnScript functionality, I build an open-source
+			tool that would provide the minimum functionality that is available
+			in EnScript.</div>
+		<div>At the early stage of the project, it was decided that V8
+			scripting engine provided by Google is a good option to go with
+			because this engine compiles code directly into machine code which
+			increases significantly performance of execution. Comparing to Java,
+			for example, this compiles code into binary data that is than taken
+			by Java Virtual Machine and translated that data into machine code,
+			V8 has no intermediate action to translate the data.</div>
+		<div>
+			In recent years, based on V8 engine there were created other useful
+			frameworks and runtime environments. One of such environments is the
+			Node.js earlier mentioned. Node.js allows user to execute scripts
+			written in JavaScript (please note that Java and JavaScript have in
+			common only the name and some sort of similarities in syntax, but
+			these are two completely different programming languages), but
+			execution is performed on server-side. As it was already mentioned,
+			client-side execution of JavaScript make use of computer resources
+			available on the computer that is browsing the website, while the
+			server-side execution uses the resources of the server that is
+			hosting that website. Node.js is a runtime environment so it has
+			exactly the same syntax as the language of the scripts it runs –
+			JavaScript syntax. This is a valuable feature of the module described
+			in this paper, because it allows any user with knowledge in
+			JavaScript to get into writing scripts on this platform. At the
+			beginning of this project, I set some goals for this module which I
+			think are important to be mentioned here: <br> • Fast execution
+			<br>• Web integrated code editor <br> • Friendly user
+			interface to present results <br>• Common syntax for all
+			versions of the software <br>• To be possible to integrate into
+			Firebrick
+		</div>
+		<div>Based on the above goals, Node.js matches two of them – the
+			performance available when running scripts in Node.js is the best
+			solution for this scripting engine and the syntax already mentioned
+			of JavaScript, which has a wide usage across the world, meets another
+			goal mentioned above. In order to achieve another two goals related
+			to user interface, I used an open-source code editor to integrate it
+			in my web scripting engine and I display the result into using a tree
+			format jquery plugin. In Figure 8 - Scripting engine overview it you
+			can see how it looks all together:</div>
+		<div>
+			As a common web application, this scripting engine tool also has a
+			menu present on the top of the page. It consits of five menu items
+			with it’s sub-menu items: </br>
+			<ul>
+				<li><a href="#">Db actions</a>
+					<ul>
+						<li>Start mongo db</li>
+						<li>Stop mongo db</li>
+						<li>Repair mongo db</li>
+						<li>Clear db</li>
+					</ul></li>
+				<li><a href="#">Mounted devices</a>
+					<ul>
+						<li>(Populated dynamicaly)</li>
+					</ul></li>
+				<li><a href="#">Existing nodes</a>
+					<ul>
+						<li>(Populated dynamicaly)</li>
+					</ul></li>
+				<li><a href="#">User scripts</a>
+					<ul>
+						<li>(Populated dynamicaly)</li>
+					</ul></li>
+				<li><a href="#">Help</a>
+					<ul>
+						<li>Code editor shortcuts</li>
+						<li>About Firebrick</li>
+						<li>User Guide</li>
+					</ul></li>
+			</ul>
+		</div>
+		<div>The first menu item is related only to database actions and
+			it provides user possibility to start, stop and repair (used in
+			special cases when the database server shutdown was corrupted). But
+			it also allows user to remove all previously imported data, this is
+			needed when new hard drive image evidence needs to be imported, the
+			old data should be deleted. The next three menu items are populated
+			on the fly.</div>
+		<div>The Mounted devices displays the list of images mounted on
+			to the system and however the Firebrick is based on Linux operating
+			system, this module can run on both Linux and Windows operating
+			systems and, depending on this, it will display the available virtual
+			devices or Windows and all devices available under /dev path on
+			Linux. The menu items called Existing Nodes allows user to see what
+			folder roots were already imported into the database. This
+			functionality is needed when for example the forensic examiner
+			doesn’t need to import all the files data available on a mounted
+			device, but for example he is interested only into a specific
+			location (ex. on Windows he is interested only in
+			F:/Users/monica/Documents and Settings or on Linux
+			/dev/sda1/usr/home). Once the examiner imported the needed node he
+			can import several others and using this menu item he can navigate
+			through the imported folder nodes.</div>
+		<div>The last dynamically populated menu item is User scripts
+			which contains the list of scripts created by user and also it
+			contains a sub-menu item called New script which on click displays a
+			popup to introduce the name of the new script and then saves the
+			newly created script. The last menu item has a standard
+			functionality; the first sub-menu item displays a page with the full
+			list of shortcuts provided by the authors of code editor plugin.</div>
+		<div>Second sub-menu is a link to official UCD Firebrick project
+			and third one is a basic user guide. Figure 9 - Left part of top
+			section The next section, available in more details in Figure 9 -
+			Left part of top section and Figure 10 - Right part of top section,
+			consists of two parts. The right part is a simple legend for the tree
+			structure of folder displayed in the main content of the screen and
+			it just explains that the date and time displayed in pink is the
+			creation time of the file, green is the last access time and blue is
+			last modification time.</div>
+		<div>However the left part, that can be seen above is used to
+			specify the folder path that needs to be imported into the database.
+			And after the importing, this path will be displayed in the menu
+			under Existing nodes menu item. This can be either the path to the
+			mounted hard drive device or it can be a more specific path known to
+			exist under that specific mounted hard drive. This functionality is
+			necessary to save time when the investigation is looking for specific
+			evidences of user activity and doesn’t need to check the system
+			related files. 3.2. Scripting functionality in details The main
+			content of the user interface consists of three parts: code editor,
+			scripting actions and resulted data. As it can be seen in Figure 11 -
+			Code editor area, the text area available to input the code is not a
+			simple one, it is an Figure 11 - Code editor area open-source code
+			editor plugin that provides basic functionality of a standard
+			Integrated Development Environment. From the code example that can be
+			seen in the above figure, some of the words are recognized as
+			key-words of the JavaScript language and are highlighted, there is
+			also a plain syntax validation and if the user is interested in a
+			more detailed information, he can read it from the tooltip that is
+			displayed on the red marks on the left side of the code editor area,
+			next to row numbers. It also allows user to collapse or expand
+			logical blocks, similar to any development environment. The next part
+			of main area is the scripting toolbar which contains on the top the
+			name of the script currently loaded in the code editor, then there is
+			a save button that would save the content of the script currently
+			open. There is also a remove button, which is not available for the
+			script default.js which is the basic demo script. And the last one is
+			the Start button which launches the script and the resulted files and
+			folders are displayed on the right side. In Figure 12 – Folder tree
+			results it can be seen the content of a folder called 100CANON its
+			children and the parent.</div>
+		<div>The tree structure plugin was changed specially for this
+			project to be able to display the creation, access and modification
+			date and time, I also changed it to display the icons of the most
+			common files formats and in order to provide performance when
+			navigating through the folder structure, I changed to load only 3
+			levels of the folder hierarchy tree. Currently it displays the list
+			of children of a given folder, and the parent with only this child
+			node. In order to navigate to the top of to the bottom of the folder
+			hierarchy it is necessary only a simple click on the folder. 3.3.
+			Scripting syntax As it was already seen above, the script should
+			follow specific structure to return valid results. Below is the
+			content of the default script. In order to provide an overview on how
+			scripts should be written, I will explain each line of the script.</div>
+		<div>
+			1 var dbActions = require("./../dao/crudActions"); <br> 2
+			function execute(urlParams, callback){ <br> 3
+			dbActions.search({extention:{ $in: ["doc", "docx","jpg"] }},{}, <br>
+			4 function(err, documents) { callback(err,documents); <br> 5 },
+			{ sort: { createdTime: -1 }, limit: 40 }); <br> 6 } <br> 7
+			exports.execute = execute;
+
+		</div>
+		<div>
+			Line number 1 represents a standard Node.js import of a different
+			script. In this case it imports a script created by me as part of
+			this scripting engine. Second line is the function definition and
+			this is a mandatory format for scripts in this engine. Third line is
+			calling a function search from the earlier imported script and it
+			contains a set of parameters. For this particular case, the search
+			will look for files with doc, docx and jpg extension. <br>Line
+			number 4 is the result function, which will either return error and
+			documents object will be empty, these two are then sent back to the
+			calling function via callback. The next line, contains the sorting
+			fields and number of elements in the resulted list. The parameters
+			will sort all the existing documents by creationTime in ascending
+			order and bring back only the first 40 elements. Line number 7 is
+			also mandatory for this scripting engine in order to be executed.
+			This is actually a Node.js standard way to make a function public
+			available for other scripts.
+		</div>
+		<div>It is to be noted that the scripting engine is displaying
+			any error or success message related to all of the actions described
+			above, including the menu actions.</div>
+
+	</div>
 </body>
 </html>
 
